@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import '../models/sensor_data.dart';
@@ -12,7 +13,9 @@ class MQTTService {
   
   Function(SensorData)? onDataReceived;
 
-  get connectionState => null;
+  final _connectionStateController = StreamController<MqttConnectionState>.broadcast();
+
+  Stream<MqttConnectionState> get connectionState => _connectionStateController.stream;
 
   Future<void> connect() async {
     try {
@@ -21,9 +24,20 @@ class MQTTService {
       client.secure = true;
       client.logging(on: false);
 
+      // Écoute les changements d'état de connexion
+      client.onConnected = () {
+        _connectionStateController.add(MqttConnectionState.connected);
+      };
+      client.onDisconnected = () {
+        _connectionStateController.add(MqttConnectionState.disconnected);
+      };
+
       await client.connect(username, password);
       
-      if (client.connectionStatus?.state == MqttConnectionState.connected) {
+      final currentState = client.connectionStatus?.state ?? MqttConnectionState.disconnected;
+      _connectionStateController.add(currentState);
+      
+      if (currentState == MqttConnectionState.connected) {
         print('✅ Connecté à HiveMQ Cloud');
         _subscribeToTopics();
         _listenToMessages();
@@ -31,6 +45,7 @@ class MQTTService {
       }
     } catch (e) {
       print('❌ Erreur connexion MQTT: $e');
+      _connectionStateController.add(MqttConnectionState.disconnected);
     }
   }
 
@@ -64,6 +79,11 @@ class MQTTService {
 
   void disconnect() {
     client.disconnect();
+    _connectionStateController.add(MqttConnectionState.disconnected);
     print('🔌 Déconnecté de HiveMQ');
+  }
+
+  void dispose() {
+    _connectionStateController.close();
   }
 }

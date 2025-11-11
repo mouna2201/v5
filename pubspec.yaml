@@ -17,6 +17,8 @@ dependencies:
   mqtt_client: ^10.11.1
   provider: ^6.0.5   # ⚡ AJOUTÉ
   flutter_riverpod: ^3.0.3
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

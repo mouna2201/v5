@@ -1,17 +1,24 @@
-// lib/main.dart ou lib/services/app_initializer.dart
-import 'package:flutter_application_1/presentation/providers/sensor_provider.dart';
-import 'package:flutter_application_1/services/mqtt_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import '../presentation/providers/sensor_provider.dart';
+import '../services/mqtt_service.dart';
 
+/// Provider pour le service MQTT (singleton)
+final mqttServiceProvider = Provider<MQTTService>((ref) {
+  final service = MQTTService();
+  
+  // Cleanup quand le provider est disposé
+  ref.onDispose(() {
+    service.dispose();
+  });
+  
+  return service;
+});
 
-final mqttService = MQTTService(
-  host: '92f3c5f778a8493db77b4b9500dd459c.s1.eu.hivemq.cloud',
-  username: 'piquet',
-  password: 'Piquet123*',
-);
-
-void setupMQTT(WidgetRef ref) async {
+/// Fonction helper pour initialiser MQTT
+Future<void> setupMQTT(WidgetRef ref) async {
+  final mqttService = ref.read(mqttServiceProvider);
+  
   mqttService.onDataReceived = (sensorData) {
     ref.read(sensorProvider.notifier).addSensor(sensorData);
   };

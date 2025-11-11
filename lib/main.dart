@@ -2,15 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:riverpod/src/framework.dart';
 
 import 'theme/app_theme.dart';
 import 'presentation/providers/language_provider.dart';
-import 'presentation/providers/sensor_provider.dart';
-import 'services/mqtt_service.dart';
+import 'services/app_initializer.dart';
 import 'screens/welcome/welcome_screen.dart';
-import 'screens/farmer/farmer_dashboard_screen.dart';
 
 /// Point d'entrée de l'application
 void main() {
@@ -24,15 +20,13 @@ void main() {
 class AgroApp extends ConsumerWidget {
   const AgroApp({super.key});
 
-  ProviderListenable get mqttServiceProvider => null;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(languageProvider);
 
     // Démarre MQTT au lancement
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeMQTT(ref);
+      setupMQTT(ref);
     });
 
     return MaterialApp(
@@ -49,28 +43,11 @@ class AgroApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system, // ou .dark / .light
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: const AppInitializer(), // Écran de démarrage
     );
-  }
-
-  /// Initialise MQTT une seule fois
-  Future<void> _initializeMQTT(WidgetRef ref) async {
-    final mqtt = ref.read(mqttServiceProvider);
-    await mqtt.connect();
-
-    // Écoute l'état de connexion
-    mqtt.connectionState.listen((state) {
-      final connected = state == MqttConnectionState.connected;
-      ref.read(sensorProvider.notifier).setConnected(connected);
-    });
-
-    // Réception des données capteurs
-    mqtt.onDataReceived = (data) {
-      ref.read(sensorProvider.notifier).addSensor(data);
-    };
   }
 }
 

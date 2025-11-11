@@ -1,5 +1,4 @@
-// ignore: depend_on_referenced_packages
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/sensor_data.dart';
 
 class SensorState {
@@ -19,23 +18,21 @@ class SensorState {
 class SensorNotifier extends StateNotifier<SensorState> {
   SensorNotifier() : super(SensorState(sensors: []));
 
-  void addSensor(SensorData data, dynamic state) {
-    final updated = state.sensors
+  void addSensor(SensorData data) {
+    final updated = List<SensorData>.from(state.sensors)
       ..removeWhere((s) => s.deviceId == data.deviceId)
-      ..add(data);
-    state = state.copyWith(
-      sensors: List.from(updated)
-        ..sort((a, b) => b.timestamp.compareTo(a.timestamp)),
-    );
+      ..add(data)
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    
+    state = state.copyWith(sensors: updated);
   }
 
   void setConnected(bool connected) {
-    var state = state.copyWith(isConnected: connected);
+    state = state.copyWith(isConnected: connected);
   }
 
   void clear() {
-    var state;
-    state = state.copyWith(sensors: []);
+    state = SensorState(sensors: []);
   }
 }
 
