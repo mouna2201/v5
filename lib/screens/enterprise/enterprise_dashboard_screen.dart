@@ -53,9 +53,11 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF101018),
       appBar: AppBar(
-        title: const Text('Tableau de bord Admin'),
-        backgroundColor: Colors.green,
+        title: const Text('Tableau de bord Admin', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1B5E20),
+        centerTitle: true,
         actions: [
           // NOUVEAU - Indicateur de connexion MQTT
           Icon(
@@ -84,14 +86,14 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
 
             // NOUVEAU - CARTE DE STATUT MQTT
             Card(
-              color: _isConnected ? Colors.green[50] : Colors.orange[50],
+              color: const Color(0xFF1E1E2E),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     Icon(
                       _isConnected ? Icons.sensors : Icons.sensors_off,
-                      color: _isConnected ? Colors.green : Colors.orange,
+                      color: _isConnected ? Colors.green.shade400 : Colors.orange.shade400,
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -99,14 +101,17 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
                       children: [
                         Text(
                           _isConnected ? 'Connecté à HiveMQ' : 'Connexion en cours...',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         Text(
                           _isConnected 
                             ? '${_sensorData.length} données reçues'
                             : 'Attente des données des capteurs',
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Colors.grey.shade400,
                             fontSize: 12,
                           ),
                         ),
@@ -115,7 +120,7 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
                     const Spacer(),
                     if (!_isConnected)
                       IconButton(
-                        icon: const Icon(Icons.refresh),
+                        icon: const Icon(Icons.refresh, color: Colors.white),
                         onPressed: _initMQTT,
                         iconSize: 20,
                       ),
@@ -127,12 +132,12 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
 
             // NOUVEAU - DONNÉES DES CAPTEURS (si disponibles)
             if (_sensorData.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Données des Capteurs en Temps Réel',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: Colors.green.shade400,
                 ),
               ),
               const SizedBox(height: 10),
@@ -153,26 +158,43 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
             // LISTE DES FERMIERS EXISTANTE
             Text(
               'Fermiers (${_farmers.length})',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: Colors.green.shade400,
               ),
             ),
             const SizedBox(height: 10),
             Expanded(
               flex: 1, // Prend moins d'espace que les capteurs
               child: _farmers.isEmpty
-                  ? const Center(child: Text('Aucun fermier enregistré'))
+                  ? Center(
+                      child: Text(
+                        'Aucun fermier enregistré',
+                        style: TextStyle(color: Colors.grey.shade400),
+                      ),
+                    )
                   : ListView.builder(
                       itemCount: _farmers.length,
                       itemBuilder: (context, index) {
                         final farmer = _farmers[index];
                         return Card(
+                          color: const Color(0xFF1E1E2E),
                           child: ListTile(
-                            leading: const Icon(Icons.person),
-                            title: Text(farmer.name),
-                            subtitle: Text(farmer.email),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                            leading: Icon(Icons.person, color: Colors.green.shade400),
+                            title: Text(
+                              farmer.name,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              farmer.email,
+                              style: TextStyle(color: Colors.grey.shade400),
+                            ),
+                            trailing: Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.green.shade400,
+                              size: 16,
+                            ),
                           ),
                         );
                       },
@@ -188,8 +210,8 @@ class _EnterpriseDashboardScreenState extends State<EnterpriseDashboardScreen> {
           _loadFarmers();
           if (!_isConnected) _initMQTT();
         },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.refresh),
+        backgroundColor: const Color(0xFF1B5E20),
+        child: const Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }

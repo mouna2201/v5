@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/custom_button.dart';
-import '../farmer/login_screen.dart';
 import '../enterprise/enterprise_role_screen.dart';
 import '../../presentation/providers/language_provider.dart';
+import '../farmer/field_list_screen.dart';
 import 'dart:math';
 
 class WelcomeScreen extends ConsumerStatefulWidget {
@@ -35,7 +35,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     super.dispose();
   }
 
-  // 🌊 Fond animé
   Widget _animatedBackground() {
     return AnimatedBuilder(
       animation: _controller,
@@ -53,26 +52,25 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     final locale = ref.watch(languageProvider);
     final currentLang = locale.languageCode;
 
-    // Textes dynamiques selon la langue
-    String welcomeText = {
+    final welcomeText = {
       'fr': "Bienvenue sur AgroPiquet 🌿",
       'en': "Welcome to AgroPiquet 🌿",
       'ar': "مرحبًا بك في أغروبيكيت 🌿"
     }[currentLang]!;
 
-    String roleText = {
+    final roleText = {
       'fr': "Choisissez votre rôle pour continuer",
       'en': "Choose your role to continue",
       'ar': "اختر دورك للمتابعة"
     }[currentLang]!;
 
-    String farmerText = {
+    final farmerText = {
       'fr': "Je suis un petit fermier 👨‍🌾",
       'en': "I am a small farmer 👨‍🌾",
       'ar': "أنا فلاح صغير 👨‍🌾"
     }[currentLang]!;
 
-    String enterpriseText = {
+    final enterpriseText = {
       'fr': "Je suis une entreprise agricole 🏢🌱",
       'en': "I am an agricultural company 🏢🌱",
       'ar': "أنا شركة زراعية 🏢🌱"
@@ -82,85 +80,86 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       body: Stack(
         children: [
           _animatedBackground(),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedBuilder(
-                    animation: _animation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, -_animation.value),
-                        child: const Icon(Icons.eco,
-                            size: 120, color: Colors.green),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    welcomeText,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    roleText,
-                    style: const TextStyle(fontSize: 16, color: Colors.black54),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-
-                  // 🌐 Bouton langue
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: PopupMenuButton<String>(
-                      icon: const Icon(Icons.language, color: Colors.green),
-                      onSelected: (value) {
-                        changeLanguage(ref, value);
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'fr',
-                          child: Text("🇫🇷 Français"),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40), // Espace en haut pour mobile
+                      AnimatedBuilder(
+                        animation: _animation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, -_animation.value),
+                            child: const Icon(Icons.eco,
+                                size: 100, color: Colors.green), // Taille réduite pour mobile
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        welcomeText,
+                        style: const TextStyle(
+                          fontSize: 24, // Taille réduite pour mobile
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
                         ),
-                        const PopupMenuItem(
-                          value: 'en',
-                          child: Text("🇺🇸 English"),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        roleText,
+                        style: const TextStyle(fontSize: 14, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(Icons.language, color: Colors.green),
+                          onSelected: (value) => changeLanguage(ref, value),
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'fr',
+                              child: Text("🇫🇷 Français"),
+                            ),
+                            PopupMenuItem(
+                              value: 'en',
+                              child: Text("🇺🇸 English"),
+                            ),
+                            PopupMenuItem(
+                              value: 'ar',
+                              child: Text("🇸🇦 العربية"),
+                            ),
+                          ],
                         ),
-                        const PopupMenuItem(
-                          value: 'ar',
-                          child: Text("🇸🇦 العربية"),
+                      ),
+                      const SizedBox(height: 20),
+                      CustomButton(
+                        text: farmerText,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => FieldListScreen()),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 15),
+                      CustomButton(
+                        text: enterpriseText,
+                        outlined: true,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const EnterpriseRoleScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 40), // Espace en bas pour mobile
+                    ],
                   ),
-
-                  const SizedBox(height: 20),
-                  CustomButton(
-                    text: farmerText,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const FarmerLoginScreen()),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  CustomButton(
-                    text: enterpriseText,
-                    outlined: true,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const EnterpriseRoleScreen()),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -183,21 +182,19 @@ class WavePainter extends CustomPainter {
     final path1 = Path();
     final path2 = Path();
 
-    // Vague 1
     path1.moveTo(0, size.height * 0.5);
     for (double i = 0; i <= size.width; i++) {
       path1.lineTo(
-          i, size.height * 0.5 + sin((i / size.width * 2 * 3.1415) + offset) * 20);
+          i, size.height * 0.5 + sin((i / size.width * 2 * pi) + offset) * 20);
     }
     path1.lineTo(size.width, size.height);
     path1.lineTo(0, size.height);
     path1.close();
 
-    // Vague 2
     path2.moveTo(0, size.height * 0.55);
     for (double i = 0; i <= size.width; i++) {
       path2.lineTo(
-          i, size.height * 0.55 + cos((i / size.width * 2 * 3.1415) + offset) * 25);
+          i, size.height * 0.55 + cos((i / size.width * 2 * pi) + offset) * 25);
     }
     path2.lineTo(size.width, size.height);
     path2.lineTo(0, size.height);

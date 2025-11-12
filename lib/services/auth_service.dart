@@ -82,4 +82,14 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kUsersKey);
   }
+
+  // Récupère l'utilisateur actuellement connecté
+  Future<UserModel?> getCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('current_user_id');
+    if (userId == null) return null;
+    
+    final users = await _getUsers();
+    return users.firstWhere((user) => user.id == userId, orElse: () => UserModel(id: '', name: '', email: '', password: '', role: ''));
+  }
 }

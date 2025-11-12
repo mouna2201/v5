@@ -8,11 +8,11 @@ class EnterpriseRoleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF101018),
+      backgroundColor: const Color(0xFFF0FFF0), // Vert bébé très clair
       appBar: AppBar(
-        title: const Text("Choisir votre rôle"),
+        title: const Text("Choisir votre rôle", style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: const Color(0xFF1B5E20), // Vert foncé
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -20,12 +20,12 @@ class EnterpriseRoleScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 40),
-            const Text(
+            Text(
               "Accès à l'Entreprise Agricole",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),

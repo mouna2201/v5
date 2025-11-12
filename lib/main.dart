@@ -1,19 +1,17 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'theme/app_theme.dart';
 import 'presentation/providers/language_provider.dart';
-import 'services/app_initializer.dart';
 import 'screens/welcome/welcome_screen.dart';
+import 'screens/farmer/farmer_dashboard_screen.dart';
+import 'screens/enterprise/enterprise_dashboard_screen.dart';
+import 'services/auth_service.dart';
+import 'services/mqtt_service.dart';
 
-/// Point d'entrée de l'application
 void main() {
   runApp(
-    const ProviderScope(
-      child: AgroApp(),
-    ),
+    const ProviderScope(child: AgroApp()),
   );
 }
 
@@ -24,9 +22,9 @@ class AgroApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(languageProvider);
 
-    // Démarre MQTT au lancement
+    // Démarre MQTT après le premier rendu
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setupMQTT(ref);
+      setupMQTT(ref); // doit exister dans mqtt_service.dart
     });
 
     return MaterialApp(
@@ -34,9 +32,9 @@ class AgroApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       locale: locale,
       supportedLocales: const [
-        Locale('fr', ''), // Français
-        Locale('en', ''), // Anglais
-        Locale('ar', ''), // Arabe
+        Locale('fr', ''),
+        Locale('en', ''),
+        Locale('ar', ''),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -46,12 +44,12 @@ class AgroApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const AppInitializer(), // Écran de démarrage
+      home: const AppInitializer(),
     );
   }
 }
 
-/// Écran de démarrage (Splash) → redirige après init
+/// SplashScreen + redirection automatique
 class AppInitializer extends ConsumerStatefulWidget {
   const AppInitializer({super.key});
 
@@ -67,19 +65,39 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Simule un délai (ou vérifie auth Firebase, etc.)
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
 
-    // TODO: Vérifier si l'utilisateur est connecté
-    // final user = await AuthService.getCurrentUser();
-    // if (user != null) → FarmerDashboardScreen()
+    final user = await AuthService().getCurrentUser();
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-    );
+    if (user != null) {
+      if (user.role == "admin") {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => EnterpriseDashboardScreen()),
+        );
+      } else if (user.role == "farmer") {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => FarmerDashboardScreen()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+        );
+      }
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      );
+    }
   }
+
+  @override
+  Widget build(BuildContext context) => const SplashScreen();
+}
+
+/// Splash animé
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -88,24 +106,19 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.eco,
-              size: 80,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 24),
-            const Text(
+          children: const [
+            Icon(Icons.eco, size: 80, color: Colors.white),
+            SizedBox(height: 24),
+            Text(
               "AgroPiquet",
               style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2),
             ),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(
+            SizedBox(height: 48),
+            CircularProgressIndicator(
               color: Colors.white,
               strokeWidth: 3,
             ),

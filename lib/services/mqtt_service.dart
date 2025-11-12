@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/sensor_data.dart';
 
 class MQTTService {
@@ -17,10 +18,24 @@ class MQTTService {
 
   Stream<MqttConnectionState> get connectionState => _connectionStateController.stream;
 
+  Future<void> setupMQTT() async {
+    client = MqttServerClient(host, 'flutter_app_${DateTime.now().millisecondsSinceEpoch}');
+    client.port = port;
+    client.secure = true;
+    client.logging(on: false);
+
+    // Écoute les changements d'état de connexion
+    client.onConnected = () {
+      _connectionStateController.add(MqttConnectionState.connected);
+    };
+    client.onDisconnected = () {
+      _connectionStateController.add(MqttConnectionState.disconnected);
+    };
+  }
+
   Future<void> connect() async {
     try {
-      client = MqttServerClient(host, 'flutter_app_${DateTime.now().millisecondsSinceEpoch}');
-      client.port = port;
+      await setupMQTT();
       client.secure = true;
       client.logging(on: false);
 
@@ -86,4 +101,9 @@ class MQTTService {
   void dispose() {
     _connectionStateController.close();
   }
+}
+
+void setupMQTT(WidgetRef ref) {
+  final mqttService = MQTTService();
+  mqttService.connect();
 }
